@@ -38,25 +38,33 @@ class MockOfflineProvider(BaseLLMProvider):
         prompt_lower = prompt.lower()
         
         # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+        if "qc-2d-014" in prompt_lower and "tạo phiếu" in prompt_lower:
             return {
                 "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+                "tool_name": "create_rework_ticket",
+                "arguments": {"defect_code": "QC-2D-014", "lot_code": "VF8-2026-0913", "assignee": "Nguyễn Minh"},
+                "thought": "Ca lỗi QC-2D-014 đã có đủ thông tin để tạo phiếu Rework."
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
+        elif "qc-3d-027" in prompt_lower:
             return {
                 "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
+                "tool_name": "query_defect_case",
+                "arguments": {"defect_code": "QC-3D-027"},
+                "thought": "Tôi cần tra cứu ca lỗi QC-3D-027 trước khi quyết định tạo Rework."
+            }
+        elif "qc-" in prompt_lower or "tra cứu ca lỗi" in prompt_lower:
+            code = "QC-9D-999" if "qc-9d-999" in prompt_lower else "QC-2D-014"
+            return {
+                "type": "tool_call",
+                "tool_name": "query_defect_case",
+                "arguments": {"defect_code": code},
+                "thought": f"Tôi sẽ tra cứu dữ liệu ca lỗi {code} từ MCP Server."
             }
         else:
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": "[Mock Agent Response]: Quy trình chung gồm kiểm tra chất lượng nhãn, xác nhận loại lỗi, ghi nhận nguyên nhân và thực hiện Rework theo tiêu chuẩn.",
+                "thought": "Câu hỏi chung về quy trình QC, trả lời trực tiếp không cần gọi Tool."
             }
 
 

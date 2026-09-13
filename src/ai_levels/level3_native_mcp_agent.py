@@ -11,12 +11,12 @@ def get_weather(city: str) -> str:
 
 def run_level3_demo():
     print("=== DEMO CẤP ĐỘ 3: NATIVE MCP AGENT ===")
-    user_goal = "Tra cứu thông tin học vụ sinh viên SV2026001"
+    user_goal = "Tra cứu ca lỗi gán nhãn 2D QC-2D-014"
     print(f"🎯 Goal: {user_goal}")
-    print("🧠 [Thought]: Phát sinh Native Tool Call 'academic_query'...")
-    print("🛠️ [Native Tool Call]: academic_query({'student_id': 'SV2026001'})")
-    print("👁️ [MCP Server Observation]: {'student_id': 'SV2026001', 'name': 'Nguyễn Văn An', 'gpa': 3.85}")
-    print("🏁 [Final Answer]: Học viên Nguyễn Văn An (SV2026001) đạt GPA 3.85.")
+    print("🧠 [Thought]: Phát sinh Native Tool Call 'query_defect_case'...")
+    print("🛠️ [Native Tool Call]: query_defect_case({'defect_code': 'QC-2D-014'})")
+    print("👁️ [MCP Server Observation]: {'status': 'SUCCESS', 'defect_code': 'QC-2D-014', 'severity': 'Cao'}")
+    print("🏁 [Final Answer]: Ca lỗi QC-2D-014 là lỗi nhãn 2D mức độ cao và cần Rework.")
 
 if __name__ == "__main__":
     run_level3_demo()

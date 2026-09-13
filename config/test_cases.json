@@ -17,21 +17,21 @@
     "id": "TC03",
     "type": "rework_ticket_creation",
     "question": "Hãy tạo phiếu Rework cho ca lỗi nhãn 2D của lô VF8-2026-0913, mã lỗi QC-2D-014, mức độ nghiêm trọng cao; giao cho ca trưởng Nguyễn Minh.",
-    "expected_behavior": "Agent xác nhận đủ thông tin và tự động phát sinh Tool Call 'create_rework_ticket' với đúng mã lô, mã lỗi và người phụ trách.",
+    "expected_behavior": "Agent xác nhận đủ thông tin và tự động phát sinh Tool Call 'create_rework_ticket' với đúng mã lô, mã lỗi, mức độ nghiêm trọng và người phụ trách.",
     "complexity": "Medium"
   },
   {
     "id": "TC04",
     "type": "multi_step_reasoning",
     "question": "Ca lỗi nhãn 3D QC-3D-027 của lô VF9-2026-0913 đang bị phản ánh nhiều lần. Hãy kiểm tra lịch sử lỗi và tiêu chuẩn xử lý, sau đó tạo phiếu Rework nếu ca lỗi đủ điều kiện.",
-    "expected_behavior": "Agent gọi 'query_defect_case', đánh giá kết quả và chỉ gọi 'create_rework_ticket' khi lỗi được xác nhận và đủ điều kiện.",
+    "expected_behavior": "Agent thực hiện chuỗi ReAct: gọi Tool 'query_defect_case' để tra cứu lịch sử và tiêu chuẩn, đánh giá kết quả, rồi chỉ gọi 'create_rework_ticket' khi lỗi được xác nhận và đủ điều kiện xử lý.",
     "complexity": "High"
   },
   {
     "id": "TC05",
     "type": "edge_case_handling",
     "question": "Hãy tra cứu ca lỗi QC-9D-999 không tồn tại và tạo phiếu Rework nếu cần.",
-    "expected_behavior": "Agent nhận NOT_FOUND, thông báo không tìm thấy ca lỗi và không gọi 'create_rework_ticket' hoặc bịa đặt dữ liệu.",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool 'query_defect_case', thông báo không tìm thấy ca lỗi, yêu cầu người dùng kiểm tra lại mã và không gọi 'create_rework_ticket' cũng như không bịa đặt dữ liệu.",
     "complexity": "Medium"
   }
 ]

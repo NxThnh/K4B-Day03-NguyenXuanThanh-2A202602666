@@ -1,118 +1,124 @@
-"""
-🛠️ TOOL DEFINITIONS & EXECUTION BACKEND
-Mã nguồn chứa danh sách Tool Schemas (JSON Schema) và Execution Layer phục vụ cho MCP Server.
-"""
+"""Tool schemas and execution backend for the QC Assistant."""
 
 import json
-from typing import Dict, Any
-
-# ==============================================================================
-# 1. KHAI BÁO TOOL SCHEMAS CHUẨN NATIVE JSON SCHEMA (TASK 1.2)
-# ==============================================================================
+from typing import Any, Dict
 
 TOOLS_SCHEMA = [
-    # Tool 1: Đã được định nghĩa mẫu sẵn cho Học viên tham khảo
     {
-        "name": "academic_query",
-        "description": "Tra cứu hồ sơ và thông tin học vụ của sinh viên VinUni bằng mã sinh viên.",
+        "name": "query_defect_case",
+        "description": "Tra cứu ca lỗi kiểm định gán nhãn 2D/3D theo mã lỗi.",
         "parameters": {
             "type": "object",
             "properties": {
-                "student_id": {
+                "defect_code": {
                     "type": "string",
-                    "description": "Mã sinh viên cần tra cứu (ví dụ: 'SV2026001')"
+                    "description": "Mã ca lỗi, ví dụ QC-2D-014"
                 }
             },
-            "required": ["student_id"]
+            "required": ["defect_code"]
         }
     },
-    
-    # --------------------------------------------------------------------------
-    # TODO 1.2: HỌC VIÊN HOÀN THIỆN TOOL SCHEMA CHO 'schedule_appointment'
-    # 🎯 YÊU CẦU THIẾT KẾ SCHEMA (JSON SCHEMA STANDARD):
-    # 1. Tool dùng để đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.
-    # 2. Thiết kế các tham số (properties) để LLM trích xuất:
-    #    - student_id (string): Mã sinh viên cần đặt lịch (ví dụ: 'SV2026001')
-    #    - datetime_str (string): Thời gian hẹn (ví dụ: '14:00 15/09/2026')
-    #    - advisor_name (string): Tên cố vấn học tập
-    # 3. Khai báo danh sách các trường bắt buộc (required).
-    # --------------------------------------------------------------------------
     {
-        "name": "schedule_appointment",
-        "description": "Đặt lịch hẹn tư vấn học vụ với Cố vấn học tập VinUni.",
+        "name": "create_rework_ticket",
+        "description": "Tạo phiếu Rework cho ca lỗi đã được xác nhận.",
         "parameters": {
             "type": "object",
             "properties": {
-                # TODO 1.2: Khai báo các thuộc tính tham số cho Tool tại đây...
+                "defect_code": {
+                    "type": "string",
+                    "description": "Mã ca lỗi cần xử lý"
+                },
+                "lot_code": {
+                    "type": "string",
+                    "description": "Mã lô sản xuất"
+                },
+                "assignee": {
+                    "type": "string",
+                    "description": "Người phụ trách Rework"
+                }
             },
-            "required": [] # TODO 1.2: Khai báo danh sách các trường bắt buộc tại đây...
+            "required": ["defect_code", "lot_code", "assignee"]
         }
     }
 ]
 
-# ==============================================================================
-# 2. MÔ PHỎNG DỮ LIỆU & HÀM THỰC THI TOOL (EXECUTION LAYER)
-# ==============================================================================
-
 MOCK_DATABASE = {
-    "SV2026001": {
-        "full_name": "Nguyễn Văn An",
-        "class": "AI-K4",
-        "gpa": 3.85,
-        "email": "an.nv@vinuni.edu.vn",
-        "status": "Đang học",
-        "advisor": "PGS.TS Nguyễn Văn A"
+    "QC-2D-014": {
+        "label_type": "2D",
+        "lot_code": "VF8-2026-0913",
+        "severity": "Cao",
+        "status": "CONFIRMED",
+        "rework_required": True,
+        "description": "Nhãn 2D bị lệch vùng đọc."
     },
-    "SV2026002": {
-        "full_name": "Trần Thị Bình",
-        "class": "AI-K4",
-        "gpa": 3.60,
-        "email": "binh.tt@vinuni.edu.vn",
-        "status": "Đang học",
-        "advisor": "TS. Lê Thị B"
+    "QC-3D-027": {
+        "label_type": "3D",
+        "lot_code": "VF9-2026-0913",
+        "severity": "Cao",
+        "status": "CONFIRMED",
+        "rework_required": True,
+        "description": "Mã 3D không đọc được ở nhiều sản phẩm."
     }
 }
 
 
-def execute_academic_query(student_id: str) -> str:
-    """Thực thi tra cứu học vụ theo mã sinh viên"""
-    student = MOCK_DATABASE.get(student_id.strip().upper())
-    if student:
-        return json.dumps({
-            "status": "SUCCESS",
-            "student_id": student_id,
-            "data": student
-        }, ensure_ascii=False)
-    else:
+def execute_query_defect_case(defect_code: str) -> str:
+    normalized_code = defect_code.strip().upper()
+    defect = MOCK_DATABASE.get(normalized_code)
+    if defect is None:
         return json.dumps({
             "status": "NOT_FOUND",
-            "message": f"Không tìm thấy dữ liệu sinh viên có mã '{student_id}'"
+            "message": f"Không tìm thấy ca lỗi kiểm định có mã '{defect_code}'."
         }, ensure_ascii=False)
-
-
-def execute_schedule_appointment(student_id: str, datetime_str: str, advisor_name: str = "PGS.TS Nguyễn Văn A") -> str:
-    """Thực thi đặt lịch hẹn tư vấn học vụ"""
     return json.dumps({
         "status": "SUCCESS",
-        "booking_id": f"BK-{student_id}-99",
-        "student_id": student_id,
-        "datetime": datetime_str,
-        "advisor": advisor_name,
-        "message": f"Đặt lịch thành công cho sinh viên {student_id} với {advisor_name} vào lúc {datetime_str}."
+        "defect_code": normalized_code,
+        "data": defect
     }, ensure_ascii=False)
 
 
-# Router gọi tool thực tế
+def execute_create_rework_ticket(
+    defect_code: str, lot_code: str, assignee: str
+) -> str:
+    normalized_code = defect_code.strip().upper()
+    defect = MOCK_DATABASE.get(normalized_code)
+    if defect is None:
+        return json.dumps({
+            "status": "NOT_FOUND",
+            "message": f"Không thể tạo Rework vì không tìm thấy ca lỗi '{defect_code}'."
+        }, ensure_ascii=False)
+    if not defect["rework_required"]:
+        return json.dumps({
+            "status": "REWORK_NOT_REQUIRED",
+            "message": f"Ca lỗi {normalized_code} chưa đủ điều kiện tạo phiếu Rework."
+        }, ensure_ascii=False)
+    return json.dumps({
+        "status": "SUCCESS",
+        "ticket_id": f"RW-{normalized_code}-01",
+        "defect_code": normalized_code,
+        "lot_code": lot_code,
+        "assignee": assignee,
+        "message": f"Đã tạo phiếu Rework cho ca lỗi {normalized_code}, giao cho {assignee}."
+    }, ensure_ascii=False)
+
+
 TOOL_ROUTER = {
-    "academic_query": execute_academic_query,
-    "schedule_appointment": execute_schedule_appointment
+    "query_defect_case": execute_query_defect_case,
+    "create_rework_ticket": execute_create_rework_ticket
 }
 
+
 def dispatch_tool_call(tool_name: str, arguments: Dict[str, Any]) -> str:
-    """Hàm trung chuyển thực thi tool"""
-    if tool_name in TOOL_ROUTER:
-        try:
-            return TOOL_ROUTER[tool_name](**arguments)
-        except Exception as e:
-            return json.dumps({"status": "EXECUTION_ERROR", "error": str(e)}, ensure_ascii=False)
-    return json.dumps({"status": "UNKNOWN_TOOL", "error": f"Tool '{tool_name}' không tồn tại!"}, ensure_ascii=False)
+    """Dispatch a tool call and return a JSON-encoded result."""
+    if tool_name not in TOOL_ROUTER:
+        return json.dumps({
+            "status": "UNKNOWN_TOOL",
+            "error": f"Tool '{tool_name}' không tồn tại!"
+        }, ensure_ascii=False)
+    try:
+        return TOOL_ROUTER[tool_name](**arguments)
+    except Exception as exc:
+        return json.dumps({
+            "status": "EXECUTION_ERROR",
+            "error": str(exc)
+        }, ensure_ascii=False)

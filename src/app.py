@@ -119,12 +119,13 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 
                 # Tổng hợp Final Answer từ kết quả Observation thực tế
                 if obs_data.get("status") == "SUCCESS":
-                    if "data" in obs_data:
+                    if "data" in obs_data and "defect_code" in obs_data:
                         d = obs_data["data"]
                         final_answer = (
-                            f"Kết quả tra cứu cho sinh viên {obs_data.get('student_id', '')} ({d.get('full_name', '')}): "
-                            f"Lớp {d.get('class', '')}, GPA: {d.get('gpa', '')}, Email: {d.get('email', '')}, "
-                            f"Trạng thái: {d.get('status', '')}, Cố vấn: {d.get('advisor', '')}."
+                            f"Ca lỗi {obs_data['defect_code']} ({d.get('label_type', '')}) "
+                            f"trên lô {d.get('lot_code', '')}: {d.get('description', '')} "
+                            f"Mức độ {d.get('severity', '')}, trạng thái {d.get('status', '')}; "
+                            f"yêu cầu Rework: {d.get('rework_required', False)}."
                         )
                     elif "message" in obs_data:
                         final_answer = obs_data["message"]
@@ -144,7 +145,36 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 "observation": obs_data,
                 "latency_ms": latency_ms
             })
-            
+
+            # Continue the plan when a confirmed defect must also be reworked.
+            if (
+                tool_name == "query_defect_case"
+                and obs_data.get("status") == "SUCCESS"
+                and obs_data.get("data", {}).get("rework_required") is True
+                and "tạo phiếu" in user_query.lower()
+            ):
+                rework_arguments = {
+                    "defect_code": obs_data["defect_code"],
+                    "lot_code": obs_data["data"]["lot_code"],
+                    "assignee": "Ca trưởng QC"
+                }
+                rework_result = mcp_server.call_tool(
+                    "create_rework_ticket", rework_arguments
+                ).get("result", {})
+                trace_logs.append({
+                    "step": step + 1,
+                    "query": user_query,
+                    "action_type": "TOOL_EXECUTION",
+                    "tool_name": "create_rework_ticket",
+                    "arguments": rework_arguments,
+                    "observation": rework_result,
+                    "latency_ms": 10.0
+                })
+                obs_data = rework_result
+                final_answer = obs_data.get(
+                    "message",
+                    f"Phản hồi từ công cụ: {json.dumps(obs_data, ensure_ascii=False)}"
+                )
             # Kết thúc vòng lặp sau khi hoàn tất Observation và xuất Final Answer
             print(f"🧠 [Thought]: Đã nhận được dữ liệu từ MCP Server. Tổng hợp kết quả phản hồi.")
             print(f"🏁 [Final Answer]: {final_answer}")
@@ -180,8 +210,8 @@ if __name__ == "__main__":
         print("🎮 [INTERACTIVE MODE] Trò chuyện trực tiếp với ReAct Agent:")
         print("💡 Gợi ý câu hỏi thử nghiệm:")
         print("   - Câu hỏi chung: 'Quy chế học vụ VinUni yêu cầu bao nhiêu tín chỉ?'")
-        print("   - Tra cứu học vụ: 'Hãy tra cứu thông tin học vụ của sinh viên SV2026001'")
-        print("   - Đặt lịch hẹn: 'Đặt lịch hẹn tư vấn cho SV2026001 vào 14:00 ngày 15/09/2026'")
+        print("   - Tra cứu lỗi: 'Hãy tra cứu ca lỗi gán nhãn 2D QC-2D-014'")
+        print("   - Tạo Rework: 'Tạo phiếu Rework cho QC-2D-014 của lô VF8-2026-0913'")
         print("   - Gõ 'exit' hoặc 'quit' để kết thúc phiên trò chuyện.\n")
         while True:
             try:

@@ -1,29 +1,140 @@
 [
   {
     "step": 1,
-    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "query": "Quy trình kiểm định nhãn 2D/3D cơ bản gồm những bước nào?",
     "action_type": "FINAL_ANSWER",
-    "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
-    "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 2845.93
+    "thought": "Câu hỏi chung về quy trình QC, trả lời trực tiếp không cần gọi Tool.",
+    "output": "[Mock Agent Response]: Quy trình chung gồm kiểm tra chất lượng nhãn, xác nhận loại lỗi, ghi nhận nguyên nhân và thực hiện Rework theo tiêu chuẩn.",
+    "latency_ms": 0.0
   },
   {
     "step": 1,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Hãy tra cứu ca lỗi gán nhãn 2D QC-2D-014.",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "query_defect_case",
     "arguments": {
-      "student_id": "SV2026001"
+      "defect_code": "QC-2D-014"
     },
-    "observation": {},
-    "latency_ms": 799.12
+    "observation": {
+      "status": "SUCCESS",
+      "defect_code": "QC-2D-014",
+      "data": {
+        "label_type": "2D",
+        "lot_code": "VF8-2026-0913",
+        "severity": "Cao",
+        "status": "CONFIRMED",
+        "rework_required": true,
+        "description": "Nhãn 2D bị lệch vùng đọc."
+      }
+    },
+    "latency_ms": 0.0
   },
   {
     "step": 2,
-    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "query": "Hãy tra cứu ca lỗi gán nhãn 2D QC-2D-014.",
     "action_type": "FINAL_ANSWER",
     "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Chưa thể trả lời chi tiết do chưa nhận được dữ liệu từ MCP Server (hãy hoàn thành TODO 2.1).",
+    "output": "Ca lỗi QC-2D-014 (2D) trên lô VF8-2026-0913: Nhãn 2D bị lệch vùng đọc. Mức độ Cao, trạng thái CONFIRMED; yêu cầu Rework: True.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Hãy tạo phiếu Rework cho ca lỗi nhãn 2D của lô VF8-2026-0913, mã lỗi QC-2D-014, mức độ nghiêm trọng cao; giao cho ca trưởng Nguyễn Minh.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "create_rework_ticket",
+    "arguments": {
+      "defect_code": "QC-2D-014",
+      "lot_code": "VF8-2026-0913",
+      "assignee": "Nguyễn Minh"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "ticket_id": "RW-QC-2D-014-01",
+      "defect_code": "QC-2D-014",
+      "lot_code": "VF8-2026-0913",
+      "assignee": "Nguyễn Minh",
+      "message": "Đã tạo phiếu Rework cho ca lỗi QC-2D-014, giao cho Nguyễn Minh."
+    },
+    "latency_ms": 0.0
+  },
+  {
+    "step": 2,
+    "query": "Hãy tạo phiếu Rework cho ca lỗi nhãn 2D của lô VF8-2026-0913, mã lỗi QC-2D-014, mức độ nghiêm trọng cao; giao cho ca trưởng Nguyễn Minh.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Đã tạo phiếu Rework cho ca lỗi QC-2D-014, giao cho Nguyễn Minh.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Ca lỗi nhãn 3D QC-3D-027 của lô VF9-2026-0913 đang bị phản ánh nhiều lần. Hãy kiểm tra lịch sử lỗi và tiêu chuẩn xử lý, sau đó tạo phiếu Rework nếu ca lỗi đủ điều kiện.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "query_defect_case",
+    "arguments": {
+      "defect_code": "QC-3D-027"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "defect_code": "QC-3D-027",
+      "data": {
+        "label_type": "3D",
+        "lot_code": "VF9-2026-0913",
+        "severity": "Cao",
+        "status": "CONFIRMED",
+        "rework_required": true,
+        "description": "Mã 3D không đọc được ở nhiều sản phẩm."
+      }
+    },
+    "latency_ms": 0.0
+  },
+  {
+    "step": 2,
+    "query": "Ca lỗi nhãn 3D QC-3D-027 của lô VF9-2026-0913 đang bị phản ánh nhiều lần. Hãy kiểm tra lịch sử lỗi và tiêu chuẩn xử lý, sau đó tạo phiếu Rework nếu ca lỗi đủ điều kiện.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "create_rework_ticket",
+    "arguments": {
+      "defect_code": "QC-3D-027",
+      "lot_code": "VF9-2026-0913",
+      "assignee": "Ca trưởng QC"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "ticket_id": "RW-QC-3D-027-01",
+      "defect_code": "QC-3D-027",
+      "lot_code": "VF9-2026-0913",
+      "assignee": "Ca trưởng QC",
+      "message": "Đã tạo phiếu Rework cho ca lỗi QC-3D-027, giao cho Ca trưởng QC."
+    },
+    "latency_ms": 10.0
+  },
+  {
+    "step": 2,
+    "query": "Ca lỗi nhãn 3D QC-3D-027 của lô VF9-2026-0913 đang bị phản ánh nhiều lần. Hãy kiểm tra lịch sử lỗi và tiêu chuẩn xử lý, sau đó tạo phiếu Rework nếu ca lỗi đủ điều kiện.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Đã tạo phiếu Rework cho ca lỗi QC-3D-027, giao cho Ca trưởng QC.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Hãy tra cứu ca lỗi QC-9D-999 không tồn tại và tạo phiếu Rework nếu cần.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "query_defect_case",
+    "arguments": {
+      "defect_code": "QC-9D-999"
+    },
+    "observation": {
+      "status": "NOT_FOUND",
+      "message": "Không tìm thấy ca lỗi kiểm định có mã 'QC-9D-999'."
+    },
+    "latency_ms": 0.0
+  },
+  {
+    "step": 2,
+    "query": "Hãy tra cứu ca lỗi QC-9D-999 không tồn tại và tạo phiếu Rework nếu cần.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Không tìm thấy ca lỗi kiểm định có mã 'QC-9D-999'.",
     "latency_ms": 10.0
   }
 ]
